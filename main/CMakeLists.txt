@@ -1,0 +1,18 @@
+idf_component_register(
+    SRCS 
+     "main.c"
+     "./Int/Int_BDR6120.c"
+     "./Int/Int_WTN6170.c"
+     "./Int/Int_SC12B.c"
+     "./Int/Int_WS2812.c"
+     "./Dri/Dri_NVS.c"
+     "./App/App_Main.c"
+                    
+    INCLUDE_DIRS 
+     "."
+     "./Com"
+     "./App"
+     "./Dri"
+     "./Int"
+     "./Mid"
+     )
