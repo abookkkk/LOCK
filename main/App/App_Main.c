@@ -324,6 +324,7 @@ static void App_Main_AddUser(void)
         status = App_Main_Get_Key_Info(first_buf);
         switch (status)
         {
+            //TODO第一次输入时就要判断是否在flash中有数据
         // 第一次输入的密码全是数字
         case Com_OK:
             sayWithoutInt();
