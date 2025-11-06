@@ -208,93 +208,65 @@ static void App_Main_DelAdmin(void)
     sayWithoutInt();
     sayDelAdmin();
     // 判断管理员账号是否存在
-    if (Dri_NVS_Has_Key(ADMIN) == ESP_OK)
+    Com_Status status = App_Main_Verify_Password();
+    if (status == Com_OK)
     {
         sayWithoutInt();
-        sayInputAdminPassword();
+        sayVerifySucc();
 
-        Com_Status status = App_Main_Get_Key_Info(first_buf);
-        switch (status)
-        {
-        case Com_OK:
-            //! 注意要写为&buf_max_size
-            Dri_NVS_Get_Str(ADMIN, second_buf, &buf_max_size);
-            if (strcmp(first_buf, second_buf) == 0)
-            {
-                sayWithoutInt();
-                sayVerifySucc();
+        // 是否确认删除
+        // 请按#键
+        sayWithoutInt();
+        sayPressSharp();
+        // 确认删除
+        sayWithoutInt();
+        sayDelConfim();
+        // 设置删除确认标志，等待在主按键处理循环中处理
+        delete_confirmation_pending = true;
 
-                // 是否确认删除
-                // 请按#键
-                sayWithoutInt();
-                sayPressSharp();
-                // 确认删除
-                sayWithoutInt();
-                sayDelConfim();
-                // 设置删除确认标志，等待在主按键处理循环中处理
-                delete_confirmation_pending = true;
-
-                // 轮询检测
-                //  按下#确认删除
-                //  Touch_Key key;
-                //  uint8_t timeout = 0;
-                //  while (1)
-                //  {
-                //      key = Int_SC12B_GetKey();
-                //      if (key == key_sharp)
-                //      {
-                //          printf("delete succ\r\n");
-                //          esp_err_t err = Dri_NVS_Del_User(ADMIN);
-                //          if (err == ESP_OK)
-                //          {
-                //              sayWithoutInt();
-                //              sayDelSucc();
-                //          }
-                //          else
-                //          {
-                //              sayWithoutInt();
-                //              sayDelFail();
-                //          }
-                //          break;
-                //      }
-                //      else if (key != key_no)
-                //      {
-                //          // 检测到其他按键，取消删除操作
-                //          sayWithoutInt();
-                //          sayDelFail();
-                //          break;
-                //      }
-                //      else
-                //      {
-                //          // 没有按键，增加超时计数
-                //          timeout++;
-                //          if (timeout > 100)
-                //          { // 超时时间约5秒(100*50ms)
-                //              sayWithoutInt();
-                //              //sayDelTimeout();
-                //              break;
-                //          }
-                //          vTaskDelay(50);
-                //      }
-                //  }
-            }
-            else
-            {
-                // 管理员密码错误，验证失败
-                sayWithoutInt();
-                sayVerifyFail();
-            }
-            break;
-
-        case Com_TIMEOUT:
-            break;
-        case Com_ERROR:
-            printf("verify error\r\n");
-            break;
-
-        default:
-            break;
-        }
+        // 轮询检测
+        //  按下#确认删除
+        //  Touch_Key key;
+        //  uint8_t timeout = 0;
+        //  while (1)
+        //  {
+        //      key = Int_SC12B_GetKey();
+        //      if (key == key_sharp)
+        //      {
+        //          printf("delete succ\r\n");
+        //          esp_err_t err = Dri_NVS_Del_User(ADMIN);
+        //          if (err == ESP_OK)
+        //          {
+        //              sayWithoutInt();
+        //              sayDelSucc();
+        //          }
+        //          else
+        //          {
+        //              sayWithoutInt();
+        //              sayDelFail();
+        //          }
+        //          break;
+        //      }
+        //      else if (key != key_no)
+        //      {
+        //          // 检测到其他按键，取消删除操作
+        //          sayWithoutInt();
+        //          sayDelFail();
+        //          break;
+        //      }
+        //      else
+        //      {
+        //          // 没有按键，增加超时计数
+        //          timeout++;
+        //          if (timeout > 100)
+        //          { // 超时时间约5秒(100*50ms)
+        //              sayWithoutInt();
+        //              //sayDelTimeout();
+        //              break;
+        //          }
+        //          vTaskDelay(50);
+        //      }
+        //  }
     }
     else
     {
@@ -302,7 +274,8 @@ static void App_Main_DelAdmin(void)
         sayVerifyFail();
         // 不存在管理员
     }
-    App_Main_resetBuffers();
+    //使用我们封装起来的函数后就不用清除缓冲区了
+    //App_Main_resetBuffers();
 }
 // 添加用户
 static void App_Main_AddUser(void)
@@ -324,52 +297,50 @@ static void App_Main_AddUser(void)
         status = App_Main_Get_Key_Info(first_buf);
         switch (status)
         {
-            //TODO第一次输入时就要判断是否在flash中有数据
         // 第一次输入的密码全是数字
         case Com_OK:
-            sayWithoutInt();
-            sayInputUserPasswordAgain();
-            status = App_Main_Get_Key_Info(second_buf);
-            switch (status)
+            //  密码一致后，检测flash中是否有此用户
+            if (Dri_NVS_Has_Key(first_buf) == ESP_OK)
             {
-            case Com_OK:
-                // 两次的密码一致
-                if (strcmp(first_buf, second_buf) == 0)
+                // 存在，不能添加
+                sayWithoutInt();
+                sayAddFail();
+            }
+            else
+            {
+                sayWithoutInt();
+                sayInputUserPasswordAgain();
+                status = App_Main_Get_Key_Info(second_buf);
+                switch (status)
                 {
-                    //  密码一致后，检测flash中是否有此用户
-                    if (Dri_NVS_Has_Key(first_buf) == ESP_OK)
+                case Com_OK:
+                    // 两次的密码一致
+                    if (strcmp(first_buf, second_buf) == 0)
                     {
-                        // 存在，不能添加
-                        sayWithoutInt();
-                        sayAddFail();
-                    }
-                    else
-                    {
-                        // 不在，可以添加
                         Dri_NVS_Write_U8(first_buf, 0);
                         sayWithoutInt();
                         sayAddSucc();
                     }
-                }
-                else
-                {
-                    // 密码不一致
+                    else
+                    {
+                        // 密码不一致
+                        sayWithoutInt();
+                        sayPasswordAddFail();
+                    }
+                    break;
+                case Com_ERROR:
+                    // 第二次密码输入有特殊符号
                     sayWithoutInt();
-                    sayPasswordAddFail();
+                    sayIllegalOperation();
+                    break;
+                case Com_TIMEOUT:
+                    break;
+                default:
+                    break;
                 }
                 break;
-            case Com_ERROR:
-                // 第二次密码输入有特殊符号
-                sayWithoutInt();
-                sayAddFail();
-                break;
-            case Com_TIMEOUT:
-                break;
-            default:
-                break;
+                // 不在，可以添加
             }
-            break;
-
         // 第一次输入的密码有特殊符号
         case Com_ERROR:
             sayIllegalOperation();
@@ -446,12 +417,13 @@ static void App_Main_DelUser(void)
     App_Main_resetBuffers();
 }
 
+// 开门
 static void App_Main_OpenDoor(char *buf)
 {
 
     // 获取密码成功
     // 验证密码
-    //!这里要从App_Main_handler获取buf不然会没有数据
+    //! 这里要从App_Main_handler获取buf不然会没有数据
     if (Dri_NVS_Has_Key(buf) == ESP_OK)
     {
         // 存在,添加音效，开门
@@ -467,6 +439,7 @@ static void App_Main_OpenDoor(char *buf)
         sayAlarm();
     }
 }
+// 处理用户输入
 void App_Main_handler(char *buf)
 {
     if (strlen(buf) < 2)
@@ -474,11 +447,11 @@ void App_Main_handler(char *buf)
         sayIllegalOperation();
     }
     else if (strlen(buf) == 2)
-    {//添加管理员
+    { // 添加管理员
         if (buf[0] == '0' && buf[1] == '0')
         {
             App_Main_AddAdmin();
-        }//删除管理员
+        } // 删除管理员
         else if (buf[0] == '0' && buf[1] == '1')
         {
             App_Main_DelAdmin();
@@ -487,11 +460,11 @@ void App_Main_handler(char *buf)
         {
 
             App_Main_AddUser();
-        }//删除用户
+        } // 删除用户
         else if (buf[0] == '1' && buf[1] == '1')
         {
             App_Main_DelUser();
-        }//删除全部
+        } // 删除全部
         else if (buf[0] == '9' && buf[1] == '9')
         {
             esp_err_t err = Dri_NVS_Del_All_User();
