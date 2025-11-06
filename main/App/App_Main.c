@@ -55,6 +55,7 @@ static Com_Status App_Main_Verify_Password(void)
                 return Com_ERROR;
             }
             break;
+        //第二次输入的有问题
         case Com_ERROR:
             sayRetry();
             break;
@@ -67,6 +68,9 @@ static Com_Status App_Main_Verify_Password(void)
     else
     {
         sayWithoutInt();
+        sayIllegalOperation();
+        App_Main_resetBuffers();
+        return Com_NO_DATA;
         // 请添加管理员
     }
     App_Main_resetBuffers();

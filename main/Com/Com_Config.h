@@ -8,6 +8,7 @@ typedef enum
     Com_ERROR,
     Com_TIMEOUT,
     Com_OTHER,
+    Com_NO_DATA
 }Com_Status;
 
 #endif /* __COM_CONFIG_H__ */
