@@ -5,8 +5,11 @@ idf_component_register(
      "./Int/Int_WTN6170.c"
      "./Int/Int_SC12B.c"
      "./Int/Int_WS2812.c"
+     "./Int/Int_FPM383.c"
      "./Dri/Dri_NVS.c"
+     "./Dri/Dri_BLUE.c"
      "./App/App_Main.c"
+     "./App/App_BlueWifi.c"
                     
     INCLUDE_DIRS 
      "."

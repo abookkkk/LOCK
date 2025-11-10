@@ -12,8 +12,8 @@
   "clangd.path": "D:\\Embed\\Espressif\\tools\\esp-clang\\16.0.1-fe4f10a809\\esp-clang\\bin\\clangd.exe",
   "clangd.arguments": [
     "--background-index",
-    "--query-driver=D:\\Embed\\Espressif\\tools\\xtensa-esp-elf\\esp-13.2.0_20240530\\xtensa-esp-elf\\bin\\xtensa-esp32-elf-gcc.exe",
-    "--compile-commands-dir=${workspaceFolder}\\build"
+    "--query-driver=D:\\Embed\\Espressif\\tools\\riscv32-esp-elf\\esp-13.2.0_20240530\\riscv32-esp-elf\\bin\\riscv32-esp-elf-gcc.exe",
+    "--compile-commands-dir=d:\\Code\\ESP32_Projects\\LOCK\\build"
   ],
   "idf.flashType": "UART",
   "idf.portWin": "COM13",
@@ -31,6 +31,7 @@
     "app_main.h": "c",
     "com_config.h": "c",
     "stdio.h": "c",
-    "esp_task.h": "c"
+    "esp_task.h": "c",
+    "int_fpm383.h": "c"
   }
 }

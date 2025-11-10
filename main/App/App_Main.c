@@ -5,7 +5,13 @@ static void App_Main_DelAdmin(void);
 static void App_Main_AddUser(void);
 static void App_Main_DelUser(void);
 static void App_Main_OpenDoor(char *buf);
+
 #define ADMIN "admin"
+#define Int_FPM383_IT GPIO_NUM_10
+
+extern TaskHandle_t finger_handler;
+extern uint8_t touch_flag;
+
 size_t buf_max_size = 20;
 char first_buf[20] = {};
 char second_buf[20] = {};
@@ -30,6 +36,8 @@ void App_Main_Init(void)
     Int_WTN6170_Init();
     // 初始化flash
     Dri_NVS_Init();
+    // 初始化指纹
+    Int_FPM383_Init();
 }
 // 验证输入的和管理员密码是否一致以及有无管理员
 static Com_Status App_Main_Verify_Password(void)
@@ -55,7 +63,7 @@ static Com_Status App_Main_Verify_Password(void)
                 return Com_ERROR;
             }
             break;
-        //第二次输入的有问题
+        // 第二次输入的有问题
         case Com_ERROR:
             sayRetry();
             break;
@@ -142,6 +150,7 @@ Com_Status App_Main_Get_Key_Info(char key_info[])
         vTaskDelay(50);
     }
 }
+
 // 添加管理员
 static void App_Main_AddAdmin(void)
 {
@@ -278,8 +287,8 @@ static void App_Main_DelAdmin(void)
         sayVerifyFail();
         // 不存在管理员
     }
-    //使用我们封装起来的函数后就不用清除缓冲区了
-    //App_Main_resetBuffers();
+    // 使用我们封装起来的函数后就不用清除缓冲区了
+    // App_Main_resetBuffers();
 }
 // 添加用户
 static void App_Main_AddUser(void)
@@ -443,6 +452,7 @@ static void App_Main_OpenDoor(char *buf)
         sayAlarm();
     }
 }
+
 // 处理用户输入
 void App_Main_handler(char *buf)
 {
@@ -481,9 +491,119 @@ void App_Main_handler(char *buf)
                 sayDelFail();
             }
         }
+        else if (buf[0] == '0' && buf[1] == '2')
+        {
+            // TODO 通知指纹任务添加指纹
+            xTaskNotify(finger_handler, 1, eSetValueWithOverwrite);
+        }
+        else if (buf[0] == '2' && buf[1] == '0')
+        {
+            // TODO 通知指纹任务删除指纹
+            xTaskNotify(finger_handler, 2, eSetValueWithOverwrite);
+        }
+        else if (buf[0] == '8' && buf[1] == '8')
+        {
+            // TODO 删除所有指纹
+            Com_Status status = Int_FPM383_Clear_DB();
+            if (status == Com_OK)
+            {
+                sayDelSucc();
+            }
+            else
+            {
+                sayDelFail();
+            }
+        }
     }
     else
     {
         App_Main_OpenDoor(buf);
+    }
+}
+// 指纹处理
+void App_Main_Finger_handler()
+{
+    uint8_t value = 0;
+    xTaskNotifyWait(UINT32_MAX, UINT32_MAX, &value, 0);
+    if (value != 0)
+    {
+        gpio_intr_disable(Int_FPM383_IT);
+
+        
+        if (value == 1)
+        {
+            // 添加指纹
+            sayWithoutInt();
+            sayAddUserFingerprint();
+            sayWithoutInt();
+            sayPlaceFinger();
+
+            vTaskDelay(2000);
+
+            uint16_t id = Int_FPM383_Get_Min_ID();
+            Com_Status status = Int_FPM383_AutoEnroll(id);
+            esp_rom_printf("add fingerprint status:%d\r\n", status);
+            esp_rom_printf("the min id is:%d\r\n", Int_FPM383_Get_Min_ID());
+            if (status == Com_OK)
+            {
+                sayWithoutInt();
+                sayAddSucc();
+            }
+            else
+            {
+                sayWithoutInt();
+                sayAddFail();
+            }
+        }
+        else if (value == 2)
+        {
+            // TODO 删除指纹
+            sayWithoutInt();
+            sayDelUserFingerprint();
+            sayWithoutInt();
+            sayPlaceFinger();
+            int16_t del_id = Int_FPM383_Get_Del_ID();
+            if (del_id != -1)
+            {
+                Com_Status status = Int_FPM383_Delete_Template(del_id);
+                if (status == Com_OK)
+                {
+                    sayWithoutInt();
+                    sayDelSucc();
+                }
+            }
+            else
+            {
+                sayWithoutInt();
+                sayDelFail();
+            }
+        }
+        esp_restart();
+    }
+    else
+    {
+        // 验证指纹，成功了就开门
+
+        if (touch_flag)
+        {
+            touch_flag = 0;
+            Com_Status status = Int_FPM383_Verify_Fingerprint();
+            if (status == Com_OK)
+            {
+                // 存在,添加音效，开门
+                sayWithoutInt();
+                sayDoorOpen();
+                // 开启电机
+                Int_BDR6120_OpenLock();
+                sayWithoutInt();
+                sayDoorClose();
+            }
+            else
+            {
+                sayWithoutInt();
+                sayVerifyFail();
+            }
+            esp_restart();
+        }
     }
 }
