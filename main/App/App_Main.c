@@ -461,7 +461,7 @@ void App_Main_handler(char *buf)
         sayIllegalOperation();
     }
     else if (strlen(buf) == 2)
-    { // 添加管理员
+    {     // 添加管理员
         if (buf[0] == '0' && buf[1] == '0')
         {
             App_Main_AddAdmin();
@@ -528,8 +528,6 @@ void App_Main_Finger_handler()
     if (value != 0)
     {
         gpio_intr_disable(Int_FPM383_IT);
-
-        
         if (value == 1)
         {
             // 添加指纹
@@ -583,7 +581,6 @@ void App_Main_Finger_handler()
     else
     {
         // 验证指纹，成功了就开门
-
         if (touch_flag)
         {
             touch_flag = 0;

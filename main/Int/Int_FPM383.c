@@ -1,5 +1,5 @@
 #include "Int_FPM383.h"
-
+//!指纹模块
 #define Int_FPM383_RX GPIO_NUM_20
 #define Int_FPM383_TX GPIO_NUM_21
 #define Int_FPM383_IT GPIO_NUM_10
@@ -107,10 +107,10 @@ static void Int_FPM383_Cancel_Command()
 
         Int_FPM383_RecvData(12, 1000);
     };
-    printf("cancel success\r\n");
+    esp_rom_printf("cancel success\r\n");
 }
 
-// 中断处理函数
+// 中断处理函数，当指纹被触摸时，执行这里
 static void Int_FPM383_ISR(void *arg)
 {
     esp_rom_printf("touch key!!\r\n");
@@ -177,7 +177,7 @@ void Int_FPM383_Sleep(void)
 
     // 打开中断使能
     gpio_intr_enable(Int_FPM383_IT);
-    printf("sleep success\r\n");
+    esp_rom_printf("sleep success\r\n");
 }
 
 // 测试
@@ -191,7 +191,7 @@ void Int_FPM383_Test(void)
     // }
     // else
     //{
-    //     printf("auto enroll failed\r\n");
+    //     esp_rom_printf("auto enroll failed\r\n");
     // }
 }
 
@@ -285,7 +285,7 @@ Com_Status Int_FPM383_Verify_Fingerprint(void)
     Int_FPM383_SendData(cmd, sizeof(cmd));
     //?为什么随便一个指纹就能开锁,原因：没写下面的recv
     //Int_FPM383_RecvData(17, 2000);
-    //printf("recv buf:%d\r\n",recv_buf[0]);
+    //esp_rom_printf("recv buf:%d\r\n",recv_buf[0]);
 
     // if (recv_buf[9] == 0x00)
     // {
@@ -300,7 +300,7 @@ Com_Status Int_FPM383_Verify_Fingerprint(void)
     //{
     //    //TODO 解决这里的问题,接收不到数据
     //    Int_FPM383_RecvData(17, 2000);
-    //    printf("recv buf:%d,%d\r\n",recv_buf[0],recv_buf[1]);
+    //    esp_rom_printf("recv buf:%d,%d\r\n",recv_buf[0],recv_buf[1]);
     //    if (recv_buf[9] == 0x00)
     //    {
     //        return Com_OK;
@@ -315,11 +315,11 @@ Com_Status Int_FPM383_Verify_Fingerprint(void)
         Int_FPM383_RecvData(17, 2000);
         
         // 打印接收到的数据以便调试
-        printf("recv buf:");
+        esp_rom_printf("recv buf:");
         for(int i = 0; i < 17; i++) {
-            printf("%02X ", recv_buf[i]);
+            esp_rom_printf("%02X ", recv_buf[i]);
         }
-        printf("\r\n");
+        esp_rom_printf("\r\n");
         
         // 检查数据包头是否正确
         if (recv_buf[0] == 0xEF && recv_buf[1] == 0x01) {

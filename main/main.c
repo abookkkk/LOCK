@@ -3,6 +3,7 @@
 #include "App_Main.h"
 #include "Int_FPM383.h"
 #include "App_BlueWifi.h"
+#include "Dri_WIFI.h"
 
 #define buf_MaxSize 20
 
@@ -14,6 +15,7 @@ TaskHandle_t finger_handler;
 
 void app_main(void)
 {
+    //App_OTA_Init();
     App_Main_Init();
     App_BlueWifi_Init();
     // Int_FPM383_Test();
@@ -25,7 +27,6 @@ void app_main(void)
 // 按键任务回调
 void Touch_Task(void *par)
 {
-
     char buf[20] = {};
     while (1)
     {

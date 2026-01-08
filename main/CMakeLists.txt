@@ -8,6 +8,7 @@ idf_component_register(
      "./Int/Int_FPM383.c"
      "./Dri/Dri_NVS.c"
      "./Dri/Dri_BLUE.c"
+     "./Dri/Dri_WIFI.c"
      "./App/App_Main.c"
      "./App/App_BlueWifi.c"
                     

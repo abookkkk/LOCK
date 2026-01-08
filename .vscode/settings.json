@@ -32,6 +32,12 @@
     "com_config.h": "c",
     "stdio.h": "c",
     "esp_task.h": "c",
-    "int_fpm383.h": "c"
+    "int_fpm383.h": "c",
+    "dri_wifi.h": "c",
+    "app_bluewifi.h": "c",
+    "esp_crt_bundle.h": "c",
+    "esp_log.h": "c",
+    "uart.h": "c",
+    "led_strip.h": "c"
   }
 }
