@@ -27,7 +27,7 @@ void __attribute__((weak)) App_Communication_RecvDataCb(uint8_t *data, uint16_t 
 }
 
 #define GATTS_TABLE_TAG "SEC_GATTS_DEMO"
-
+#define BLUE_RCV_TAG "BLUE_RCV"
 #define HEART_PROFILE_NUM 1
 #define HEART_PROFILE_APP_IDX 0
 #define ESP_HEART_RATE_APP_ID 0x55
@@ -462,7 +462,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
     case ESP_GATTS_READ_EVT:
         break;
     case ESP_GATTS_WRITE_EVT:
-        printf("++++++++%s %d\r\n", param->write.value, param->write.len);
+        ESP_LOGW(BLUE_RCV_TAG,"++++++++%s length:%d\r\n", param->write.value, param->write.len);
         App_Communication_RecvDataCb(param->write.value, param->write.len);
         break;
     case ESP_GATTS_EXEC_WRITE_EVT:

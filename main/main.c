@@ -15,7 +15,7 @@ TaskHandle_t finger_handler;
 
 void app_main(void)
 {
-    //App_OTA_Init();
+    //App_OTA_Init();在蓝牙接收到OTA升级命令时自动执行了，不需要我们手动执行
     App_Main_Init();
     App_BlueWifi_Init();
     // Int_FPM383_Test();

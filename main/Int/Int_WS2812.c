@@ -21,6 +21,11 @@ void Int_WS2812_Init(void)
         .flags.invert_out = false};
 
     // 配置RMT(红外，不是遥控器)
+    /*红外通信协议（NEC、Sony、RC5等）
+    其他需要精确时序的单线协议
+    编码器信号解码
+    脉冲宽度调制（PWM）
+    自定义协议的信号生成和接收  */
     led_strip_rmt_config_t rmt_config = {
         .clk_src = RMT_BASECLK_DEFAULT,
         .resolution_hz = LED_STRIP_RMT_RES_HZ,
@@ -35,7 +40,7 @@ void Int_WS2812_Init(void)
 void Int_WS2812_LED_ON(Touch_Key key_num, uint8_t clolor[])
 {
 
-    led_strip_set_pixel(strip_handle,key_num,clolor[0],clolor[1],clolor[2]);
+    led_strip_set_pixel(strip_handle, key_num, clolor[0], clolor[1], clolor[2]);
     led_strip_refresh(strip_handle);
 }
 

@@ -20,14 +20,14 @@ static void Int_FPM383_SendData(uint8_t *cmd, uint8_t length)
 // 接收数据
 static void Int_FPM383_RecvData(uint8_t length, TickType_t timeout)
 {
-    memset(recv_buf, 1, sizeof(recv_buf)); // 接收前清零
+    memset(recv_buf, 0, sizeof(recv_buf)); // 接收前清零
     uart_read_bytes(UART_NUM_1, recv_buf, length, timeout);
 }
 
 // 计算校验和
 void Int_FPM383_ChickSum(uint8_t *cmd, uint8_t length)
 {
-    uint8_t sum = 0;
+    uint16_t sum = 0;
     for (uint8_t i = 6; i < length - 2; i++)
     {
         sum += cmd[i];

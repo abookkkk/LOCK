@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "LOCK",
-    "project_version":    "ca9da22-dirty",
+    "project_version":    "f65eaeb-dirty",
     "project_path":       "D:/Code/ESP32_Projects/LOCK",
     "idf_path":           "D:/Embed/Espressif/frameworks/esp-idf-v5.3.1",
     "build_dir":          "D:/Code/ESP32_Projects/LOCK/build",

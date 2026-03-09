@@ -2,19 +2,21 @@
 
 // 创建OTA任务句柄
 TaskHandle_t ota_task_handle = NULL;
+void App_OTA_Task(void *pvParameters);
+
 void App_BlueWifi_Init(void)
 {
     Dri_BLUE_Init();
 
     // 创建OTA任务，挂起状态
-    xTaskCreate(App_OTA_Task, "ota_task", 8192, NULL, 5, &ota_task_handle);
+    xTaskCreate(App_OTA_Task, "ota_task", 4096, NULL, 5, &ota_task_handle);
     vTaskSuspend(ota_task_handle); // 暂停任务，等待通知
 }
 // OTA任务函数，使用任务通知等待执行
 void App_OTA_Task(void *pvParameters)
 {
     uint32_t notification_value;
-    const uint32_t ota_notification_bit = 0x01; // OTA通知位
+    // const uint32_t ota_notification_bit = 0x01; // OTA通知位
 
     while (1)
     {
@@ -26,6 +28,7 @@ void App_OTA_Task(void *pvParameters)
             // 收到通知，执行OTA升级
             printf("Starting OTA upgrade from task notification\r\n");
             App_OTA_Init();
+            vTaskSuspend(NULL); // 升级完成后再次挂起任务，等待下一次通知
         }
     }
 }
@@ -38,6 +41,7 @@ void App_Communication_RecvDataCb(uint8_t *data, uint16_t dataLen)
     // A+数字  A:添加命令 数字密码  A+111111
     // B+数字  B:删除命令 数字密码
     // C+数字  C:输入密码开门   数字密码
+    // O       O:OTA升级命令
     strcpy((char *)pwd, (char *)&data[2]);
 
     // printf("%s\r\n",pwd);
@@ -45,7 +49,7 @@ void App_Communication_RecvDataCb(uint8_t *data, uint16_t dataLen)
     switch (data[0])
     {
     case 'A':
-        esp_err_t res1 = Dri_NVS_Write_U8((char *)pwd, 0);
+        esp_err_t res1 = Dri_NVS_Write_U8((char *)pwd, 0); // value并不重要设置为零
         if (res1 == ESP_OK)
         {
             sayAddSucc();
@@ -88,6 +92,8 @@ void App_Communication_RecvDataCb(uint8_t *data, uint16_t dataLen)
         if (ota_task_handle != NULL)
         {
             xTaskNotifyGive(ota_task_handle);
+            // 把挂起的任务重新启动
+            vTaskResume(ota_task_handle);
         }
         break;
     default:
@@ -95,7 +101,7 @@ void App_Communication_RecvDataCb(uint8_t *data, uint16_t dataLen)
     }
 }
 
-static const char *TAG = "simple_ota_example";
+static const char *TAG = "simple_ota";
 extern const uint8_t server_cert_pem_start[] asm("_binary_ca_cert_pem_start");
 extern const uint8_t server_cert_pem_end[] asm("_binary_ca_cert_pem_end");
 
@@ -161,19 +167,23 @@ static void get_sha256_of_partitions(void)
 
 void App_OTA_Init(void)
 {
-    // 初始化flash
-    esp_err_t err = nvs_flash_init();
-    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
-    {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        err = nvs_flash_init();
-    }
+    // TODO 初始化flash  在蓝牙中已经初始化了,在这里验证一下
+    //  esp_err_t err = nvs_flash_init();
+    //  if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
+    //  {
+    //      ESP_ERROR_CHECK(nvs_flash_erase());
+    //      err = nvs_flash_init();
+    //  }
+    const esp_partition_t *running = esp_ota_get_running_partition();
+    printf("Current running partition: %s\r\n", running->label);
     get_sha256_of_partitions();
 
     // 初始化wifi
     Dri_WIFI_Init();
+    // HTTP客户端配置
     esp_http_client_config_t config = {
-        .url = "http://192.168.43.7:8080/Hello.bin",
+        .url = "http://10.13.208.15:8080/Hello.bin", // 本地服务器地址，需要先进入到服务器所在目录即执行cd D:\Embed_Studay\projects\intelligent_door_lock\ota，
+        // 再执行python -m http.server 8080命令启动服务器
         .crt_bundle_attach = esp_crt_bundle_attach,
         .event_handler = NULL,
         .keep_alive_enable = true,
@@ -181,6 +191,7 @@ void App_OTA_Init(void)
     esp_https_ota_config_t ota_config = {
         .http_config = &config,
     };
+    // 执行OTA升级
     esp_err_t ret = esp_https_ota(&ota_config);
     if (ret == ESP_OK)
     {
@@ -192,8 +203,8 @@ void App_OTA_Init(void)
         printf("OTA upgrade failed\r\n");
     }
     // OTA完成后，可以挂起任务等待下一次通知
-    if (ota_task_handle != NULL)
-    {
-        vTaskSuspend(ota_task_handle);
-    }
+    // if (ota_task_handle != NULL)
+    // {
+    //     vTaskSuspend(ota_task_handle);
+    // }
 }

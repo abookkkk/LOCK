@@ -3,7 +3,8 @@
 nvs,      data, nvs,     ,        0x4000,
 otadata,  data, ota,     ,        0x2000,
 phy_init, data, phy,     ,        0x1000,
+factory,  app,  factory, ,        1800K,
 # Original App Section
-ota_0,    app,  ota_0,   ,        1800K,
+ota_0,    app,  ota_0,   ,        1000K,
 # New App Section
-ota_1,    app,  ota_1,   ,        1800K,
+ota_1,    app,  ota_1,   ,        1000K,

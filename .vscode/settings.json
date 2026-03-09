@@ -39,5 +39,6 @@
     "esp_log.h": "c",
     "uart.h": "c",
     "led_strip.h": "c"
-  }
+  },
+  "idf.currentSetup": "d:\\Embed\\Espressif\\frameworks\\esp-idf-v5.3.1"
 }
