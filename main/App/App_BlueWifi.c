@@ -96,6 +96,43 @@ void App_Communication_RecvDataCb(uint8_t *data, uint16_t dataLen)
             vTaskResume(ota_task_handle);
         }
         break;
+    case 'W': // WiFi 配网命令 W+SSID+PASSWORD
+    {
+        // 数据格式：W + SSID(最多 20 字节) + PASSWORD(最多 20 字节)
+        char ssid[32] = {0};
+        char password[32] = {0};
+
+        // 解析 SSID 和 Password（根据实际协议调整）
+        memcpy(ssid, &data[2], 20);
+        memcpy(password, &data[22], 20);
+
+        printf("收到 WiFi 配网信息 SSID:%s\r\n", ssid);
+
+        // 保存 WiFi 信息到 NVS
+        esp_err_t res = Dri_NVS_Write_U8("wifi_ssid", ssid);
+        if (res == ESP_OK)
+        {
+            Dri_NVS_Write_U8("wifi_pwd", password);
+            printf("WiFi 信息保存成功\r\n");
+
+            // 重启 WiFi 连接
+            Dri_WIFI_Init();
+            sayAddSucc(); // 复用成功提示音
+        }
+        else
+        {
+            sayAddFail(); // 复用失败提示音
+        }
+    }
+    break;
+
+    case 'Q': // 查询配网状态 Q
+    {
+        // 返回当前 WiFi 状态和 IP
+        printf("WiFi Status: %s\r\n", WiFi_IsConnected() ? "Connected" : "Disconnected");
+        printf("IP Address: %s\r\n", WiFi_GetIP());
+    }
+    break;
     default:
         break;
     }
@@ -174,6 +211,7 @@ void App_OTA_Init(void)
     //      ESP_ERROR_CHECK(nvs_flash_erase());
     //      err = nvs_flash_init();
     //  }
+    //获取当前运行的分区信息
     const esp_partition_t *running = esp_ota_get_running_partition();
     printf("Current running partition: %s\r\n", running->label);
     get_sha256_of_partitions();
